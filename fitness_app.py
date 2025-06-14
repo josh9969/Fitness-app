@@ -1,77 +1,76 @@
 import streamlit as st
+import requests
+import datetime
+import pandas as pd
 
-# ------------------------
-# 🍱 Sample Food Calorie Data
-# ------------------------
-food_db = {
-    "Banana": 89,
-    "Egg (boiled)": 78,
-    "Rice (1 cup)": 206,
-    "Chicken Breast (100g)": 165,
-    "Apple": 95,
-    "Oats (1 cup)": 150
-}
+# --- Nutritionix Credentials ---
+APP_ID = "YOUR_APP_ID"
+API_KEY = "YOUR_API_KEY"
 
-# ------------------------
-# 🏋️ Exercise Database
-# ------------------------
-exercise_db = {
-    "Chest": [
-        {"name": "Push-Up", "img": "https://media.giphy.com/media/L05HgB2h6qICDs5Sms/giphy.gif", "desc": "Bodyweight chest exercise"},
-        {"name": "Bench Press", "img": "https://media.giphy.com/media/xUNd9HZq1itMkiK652/giphy.gif", "desc": "Classic barbell chest builder"}
-    ],
-    "Back": [
-        {"name": "Pull-Up", "img": "https://media.giphy.com/media/iFmw13LNwz9k6/giphy.gif", "desc": "Bodyweight back & biceps"},
-        {"name": "Deadlift", "img": "https://media.giphy.com/media/3o7abAhvUQjTWeN4CW/giphy.gif", "desc": "Mass builder for back and legs"}
-    ]
-}
+# --- Helper: Get calories from Nutritionix ---
+def get_calories(food_query):
+    url = "https://trackapi.nutritionix.com/v2/natural/nutrients"
+    headers = {
+        "x-app-id": APP_ID,
+        "x-app-key": API_KEY,
+        "Content-Type": "application/json"
+    }
+    data = {"query": food_query}
+    response = requests.post(url, headers=headers, json=data)
+    result = response.json()
+    try:
+        food = result["foods"][0]
+        return food["food_name"], food["nf_calories"]
+    except:
+        return None, None
 
-# ------------------------
-# 🚀 App Layout
-# ------------------------
-st.set_page_config(page_title="Fitness Tracker", layout="centered")
+# --- Session State Setup ---
+if "log" not in st.session_state:
+    st.session_state.log = []
 
-st.sidebar.title("🏋️ Fitness App")
-page = st.sidebar.radio("Go to", ["Calorie Counter", "Exercise Guide"])
+if "goal" not in st.session_state:
+    st.session_state.goal = 2000  # default goal
 
-# ------------------------
-# 🍽️ Calorie Counter Page
-# ------------------------
-if page == "Calorie Counter":
-    st.title("🍽️ Calorie Tracker")
+# --- UI: Title + Layout ---
+st.title("🍎 Daily Calorie Tracker")
+st.caption("Track your calories and log your meals in real-time.")
 
-    if "meals" not in st.session_state:
-        st.session_state["meals"] = []
+col1, col2 = st.columns(2)
+with col1:
+    st.number_input("🎯 Set Daily Calorie Goal", min_value=1000, max_value=5000, step=100, value=st.session_state.goal, key="goal_input")
+    if st.button("Update Goal"):
+        st.session_state.goal = st.session_state.goal_input
+        st.success(f"Goal set to {st.session_state.goal} kcal")
 
-    with st.form("meal_form"):
-        food = st.selectbox("Select Food", list(food_db.keys()))
-        quantity = st.number_input("Quantity (servings)", min_value=0.5, step=0.5, value=1.0)
-        submit = st.form_submit_button("Add Meal")
+with col2:
+    if st.button("🧹 Reset Today's Log"):
+        st.session_state.log = []
+        st.warning("Log reset for today.")
 
-        if submit:
-            calories = food_db[food] * quantity
-            st.session_state["meals"].append((food, quantity, calories))
-            st.success(f"Added {food} ({calories} kcal)")
+# --- Input Food Entry ---
+st.subheader("🍽️ Add Food Entry")
+food_query = st.text_input("Enter food (e.g. 2 boiled eggs, chicken sandwich):")
 
-    if st.session_state["meals"]:
-        st.subheader("Today's Meals")
-        total = 0
-        for item in st.session_state["meals"]:
-            st.write(f"{item[0]} × {item[1]} → **{item[2]} kcal**")
-            total += item[2]
-        st.markdown(f"### 🔥 Total Calories: **{total:.2f} kcal**")
+if st.button("➕ Add to Log"):
+    name, kcal = get_calories(food_query)
+    if name:
+        st.session_state.log.append({
+            "food": name.title(),
+            "calories": round(kcal),
+            "time": datetime.datetime.now().strftime("%H:%M")
+        })
+        st.success(f"Added {name.title()} - {round(kcal)} kcal")
+    else:
+        st.error("Couldn't recognize that food. Try something else.")
 
-# ------------------------
-# 🏋️ Exercise Page
-# ------------------------
-elif page == "Exercise Guide":
-    st.title("🏋️ Exercise Tutorials")
+# --- Log Display ---
+if st.session_state.log:
+    st.subheader("📋 Today's Meals")
+    df = pd.DataFrame(st.session_state.log)
+    st.table(df)
 
-    category = st.selectbox("Select Muscle Group", list(exercise_db.keys()))
-    exercises = exercise_db[category]
+    total = sum(item["calories"] for item in st.session_state.log)
+    st.metric("🔥 Total Calories Today", f"{total} kcal", delta=f"{st.session_state.goal - total} kcal left")
+else:
+    st.info("No food logged yet. Start by adding something above.")
 
-    for ex in exercises:
-        st.markdown(f"### {ex['name']}")
-        st.image(ex['img'], width=300)
-        st.caption(ex['desc'])
-        st.markdown("---")
