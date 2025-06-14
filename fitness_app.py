@@ -3,11 +3,10 @@ import requests
 import datetime
 import pandas as pd
 
-# --- Nutritionix Credentials ---
-APP_ID = "948fc117"
-API_KEY = "17c71ea80b533910f2a7a5cbd524aa8d"
+# --- Nutritionix API ---
+APP_ID = "YOUR_APP_ID"
+API_KEY = "YOUR_API_KEY"
 
-# --- Helper: Get calories from Nutritionix ---
 def get_calories(food_query):
     url = "https://trackapi.nutritionix.com/v2/natural/nutrients"
     headers = {
@@ -24,34 +23,67 @@ def get_calories(food_query):
     except:
         return None, None
 
-# --- Session State Setup ---
+# --- Setup ---
 if "log" not in st.session_state:
     st.session_state.log = []
 
 if "goal" not in st.session_state:
-    st.session_state.goal = 2000  # default goal
+    st.session_state.goal = 2000
 
-# --- UI: Title + Layout ---
-st.title("🍎 Daily Calorie Tracker")
-st.caption("Track your calories and log your meals in real-time.")
+# --- Page Config ---
+st.set_page_config(page_title="Fitness Tracker", layout="centered")
 
-col1, col2 = st.columns(2)
-with col1:
-    st.number_input("🎯 Set Daily Calorie Goal", min_value=1000, max_value=5000, step=100, value=st.session_state.goal, key="goal_input")
-    if st.button("Update Goal"):
-        st.session_state.goal = st.session_state.goal_input
-        st.success(f"Goal set to {st.session_state.goal} kcal")
+# --- Custom Styling ---
+st.markdown("""
+    <style>
+    body {
+        background-color: #121212;
+        color: #F1F1F1;
+    }
+    .main {
+        background-color: #1e1e1e;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05);
+    }
+    h1, h2, h3 {
+        color: #F5A623;
+        font-family: 'Trebuchet MS', sans-serif;
+    }
+    .stButton > button {
+        background-color: #F5A623;
+        color: black;
+        border-radius: 8px;
+        padding: 0.5em 1em;
+        font-weight: bold;
+    }
+    .stSelectbox, .stTextInput, .stNumberInput {
+        border-radius: 8px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-with col2:
-    if st.button("🧹 Reset Today's Log"):
-        st.session_state.log = []
-        st.warning("Log reset for today.")
+# --- TITLE ---
+st.markdown("<div class='main'>", unsafe_allow_html=True)
+st.title("🍽️ Aesthetic Calorie Tracker")
+st.caption("Dark. Simple. Gen Z Approved.")
 
-# --- Input Food Entry ---
-st.subheader("🍽️ Add Food Entry")
-food_query = st.text_input("Enter food (e.g. 2 boiled eggs, chicken sandwich):")
+# --- Goal Setter ---
+st.subheader("🎯 Daily Calorie Goal")
+goal_input = st.number_input("Set your daily goal (kcal):", min_value=1000, max_value=5000, step=100, value=st.session_state.goal)
+if st.button("Update Goal"):
+    st.session_state.goal = goal_input
+    st.success(f"Goal updated to {goal_input} kcal")
 
-if st.button("➕ Add to Log"):
+# --- Reset Button ---
+if st.button("🧹 Reset Today's Log"):
+    st.session_state.log = []
+    st.warning("Log has been reset.")
+
+# --- Food Entry ---
+st.subheader("🍕 Add Food")
+food_query = st.text_input("Enter food name + quantity (e.g., 2 eggs, chicken sandwich):")
+if st.button("➕ Add"):
     name, kcal = get_calories(food_query)
     if name:
         st.session_state.log.append({
@@ -61,25 +93,24 @@ if st.button("➕ Add to Log"):
         })
         st.success(f"Added {name.title()} - {round(kcal)} kcal")
     else:
-        st.error("Couldn't recognize that food. Try something else.")
+        st.error("Food not found. Try again.")
 
-# --- Log Display ---
+# --- Calorie Log ---
+st.subheader("📋 Meal Log")
 if st.session_state.log:
-    st.subheader("📋 Today's Meals")
     df = pd.DataFrame(st.session_state.log)
     st.table(df)
-
     total = sum(item["calories"] for item in st.session_state.log)
-    st.metric("🔥 Total Calories Today", f"{total} kcal", delta=f"{st.session_state.goal - total} kcal left")
+    st.metric("🔥 Total Today", f"{total} kcal", delta=f"{st.session_state.goal - total} kcal left")
 else:
-    st.info("No food logged yet. Start by adding something above.")
+    st.info("Start adding meals to see your log.")
 
-# --- Workout Demo Section ---
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("---")
-st.header("💪 Workout Video Demos by Body Part")
+# --- Workout Video Section ---
+st.markdown("<div class='main'>", unsafe_allow_html=True)
+st.header("🎥 Workout Demos")
 
-# --- Exercise Video Dictionary by Category ---
 exercise_library = {
     "Chest": {
         "Push Ups": "https://www.youtube.com/embed/IODxDxX7oi4",
@@ -102,16 +133,10 @@ exercise_library = {
     }
 }
 
-# --- UI: Select Category First ---
 selected_category = st.selectbox("Select a Body Part:", list(exercise_library.keys()))
+selected_exercise = st.selectbox("Select an Exercise:", list(exercise_library[selected_category].keys()))
 
-# --- UI: Then Select Exercise ---
-selected_exercise = st.selectbox(
-    "Select an Exercise:", 
-    list(exercise_library[selected_category].keys())
-)
-
-# --- Show the Video ---
 if selected_exercise:
     st.markdown(f"### ▶️ {selected_exercise}")
     st.components.v1.iframe(exercise_library[selected_category][selected_exercise], height=315)
+st.markdown("</div>", unsafe_allow_html=True)
