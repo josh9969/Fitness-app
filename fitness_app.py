@@ -74,3 +74,44 @@ if st.session_state.log:
 else:
     st.info("No food logged yet. Start by adding something above.")
 
+# --- Workout Demo Section ---
+
+st.markdown("---")
+st.header("💪 Workout Video Demos by Body Part")
+
+# --- Exercise Video Dictionary by Category ---
+exercise_library = {
+    "Chest": {
+        "Push Ups": "https://www.youtube.com/embed/IODxDxX7oi4",
+        "Incline Push Ups": "https://www.youtube.com/embed/jWxvtyvPjbE"
+    },
+    "Legs": {
+        "Squats": "https://www.youtube.com/embed/aclHkVaku9U",
+        "Lunges": "https://www.youtube.com/embed/QOVaHwm-Q6U",
+        "Calf Raises": "https://www.youtube.com/embed/-M4-G8p8fmc"
+    },
+    "Core": {
+        "Plank": "https://www.youtube.com/embed/pSHjTRCQxIw",
+        "Crunches": "https://www.youtube.com/embed/Xyd_fa5zoEU",
+        "Russian Twists": "https://www.youtube.com/embed/wkD8rjkodUI"
+    },
+    "Full Body / Cardio": {
+        "Burpees": "https://www.youtube.com/embed/dZgVxmf6jkA",
+        "Mountain Climbers": "https://www.youtube.com/embed/cnyTQDSE884",
+        "Jumping Jacks": "https://www.youtube.com/embed/UpH7rm0cYbM"
+    }
+}
+
+# --- UI: Select Category First ---
+selected_category = st.selectbox("Select a Body Part:", list(exercise_library.keys()))
+
+# --- UI: Then Select Exercise ---
+selected_exercise = st.selectbox(
+    "Select an Exercise:", 
+    list(exercise_library[selected_category].keys())
+)
+
+# --- Show the Video ---
+if selected_exercise:
+    st.markdown(f"### ▶️ {selected_exercise}")
+    st.components.v1.iframe(exercise_library[selected_category][selected_exercise], height=315)
