@@ -4,8 +4,10 @@ import datetime
 import pandas as pd
 
 # --- Nutritionix Credentials ---
-APP_ID = "YOUR_APP_ID"
-API_KEY = "YOUR_API_KEY"
+APP_ID = "948fc117"
+API_KEY = "
+17c71ea80b533910f2a7a5cbd524aa8d	—
+"
 
 # --- Helper: Get calories from Nutritionix ---
 def get_calories(food_query):
