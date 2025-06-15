@@ -4,8 +4,8 @@ import datetime
 import pandas as pd
 
 # --- Nutritionix API ---
-APP_ID = "YOUR_APP_ID"
-API_KEY = "YOUR_API_KEY"
+APP_ID = "948fc117"
+API_KEY = "02757ad8791b6ef56828ba3b27bcf9c6"
 
 def get_calories(food_query):
     url = "https://trackapi.nutritionix.com/v2/natural/nutrients"
