@@ -51,7 +51,7 @@ st.markdown("""
         font-family: 'Trebuchet MS', sans-serif;
     }
     .stButton > button {
-        background-color: #D4C9BE;
+        background-color: #5A72A0;
         color: black;
         border-radius: 8px;
         padding: 0.5em 1em;
