@@ -34,11 +34,6 @@ if "goal" not in st.session_state:
 st.set_page_config(page_title="Fitness Tracker", layout="centered")
 
 # --- Custom Styling ---
-[theme]
-backgroundColor="#123458"
-secondaryBackgroundColor="#000000"
-textColor="#ced1e4"
-
 st.markdown("""
     <style>
     body {
