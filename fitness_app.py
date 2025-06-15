@@ -65,8 +65,8 @@ st.markdown("""
 
 # --- TITLE ---
 st.markdown("<div class='main'>", unsafe_allow_html=True)
-st.title("🍽️ Aesthetic Calorie Tracker")
-st.caption("Dark. Simple. Gen Z Approved.")
+st.title("🍽️Calorie Tracker")
+
 
 # --- Goal Setter ---
 st.subheader("🎯 Daily Calorie Goal")
